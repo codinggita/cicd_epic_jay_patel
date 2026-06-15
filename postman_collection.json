@@ -1,0 +1,708 @@
+{
+  "info": {
+    "_postman_id": "9b1a2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+    "name": "DevOps Knowledge Platform API (Enterprise Collection)",
+    "description": "Comprehensive production-ready API request collection containing organized folders for all 14 route groups. Features pre-configured headers, query parameters, path variables, request bodies, and automatic bearer authorization bindings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "description": "System availability, deployment status, and database connection checks.",
+      "item": [
+        {
+          "name": "Get API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Retrieve active backend status, process uptime, environment environment, and Mongoose connection state."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "User account registration, logins, session lists, password resetting, and Multi-Factor Authentication (2FA) controls.",
+      "item": [
+        {
+          "name": "Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Regular DevOps Engineer\",\n  \"email\": \"user@devops.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register standard user credentials with email checking and strong password rules."
+          }
+        },
+        {
+          "name": "User Login (Standard)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseData = pm.response.json();",
+                  "if (responseData.success && responseData.data.token) {",
+                  "    pm.environment.set(\"token\", responseData.data.token);",
+                  "    pm.environment.set(\"userId\", responseData.data.user.id || responseData.data.user._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@devops.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate user, returning signed JWT and automatically saving token to Environment Variables."
+          }
+        },
+        {
+          "name": "User Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseData = pm.response.json();",
+                  "if (responseData.success && responseData.data.token) {",
+                  "    pm.environment.set(\"adminToken\", responseData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@devops.com\",\n  \"password\": \"AdminPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate admin, returning signed JWT and saving it to adminToken."
+          }
+        },
+        {
+          "name": "Fetch User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Retrieve current profile details using standard JWT bearer validations."
+          }
+        },
+        {
+          "name": "Fetch User Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "sessions"]
+            },
+            "description": "Retrieve all active logins, devices, IP allocations, and timestamps."
+          }
+        },
+        {
+          "name": "Enable Multi-Factor Authentication (2FA)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/2fa/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "2fa", "enable"]
+            },
+            "description": "Initiate TOTP integration, returning QR-code URLs and raw key details."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workflows",
+      "description": "CI/CD pipelines configs, runs state dry-runs, triggers, and execution history.",
+      "item": [
+        {
+          "name": "Get All Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workflows?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "workflows"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Retrieve paginated list of all workflows from the database."
+          }
+        },
+        {
+          "name": "Get Random Workflow",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workflows/random",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "workflows", "random"]
+            },
+            "description": "Retrieve a randomized DevOps workflow guide for discovery widgets."
+          }
+        },
+        {
+          "name": "Trigger Dry Run",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workflows/{{knowledgeId}}/run",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "workflows", "{{knowledgeId}}", "run"]
+            },
+            "description": "Submit a mockup run execution to generate pipeline debug metrics."
+          }
+        },
+        {
+          "name": "Fetch Run Logs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workflows/{{knowledgeId}}/logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "workflows", "{{knowledgeId}}", "logs"]
+            },
+            "description": "Fetch historical pipeline execution terminal console logs."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Infrastructure",
+      "description": "Targeted filters for container runtimes, orchestration objects, cloud vendors, and templates.",
+      "item": [
+        {
+          "name": "Kubernetes Orchestrator Guides",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infra/k8s?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infra", "k8s"],
+              "query": [{ "key": "limit", "value": "5" }]
+            },
+            "description": "Query specific Kubernetes orchestration guides, templates, and specifications."
+          }
+        },
+        {
+          "name": "Docker Container Guides",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infra/docker?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infra", "docker"],
+              "query": [{ "key": "limit", "value": "5" }]
+            },
+            "description": "Retrieve Docker multi-stage builds and engine tuning details."
+          }
+        },
+        {
+          "name": "Terraform Infrastructure Guides",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infra/terraform?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infra", "terraform"],
+              "query": [{ "key": "limit", "value": "5" }]
+            },
+            "description": "Fetch IaC configuration and state management manuals."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "description": "Autocomplete, fuzzy matching, query relevance scoring, and categories filters.",
+      "item": [
+        {
+          "name": "Relevance Full Text Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/search?q=docker compose&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "search"],
+              "query": [
+                { "key": "q", "value": "docker compose" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "Fuzzy full-text query matching using text score parameters."
+          }
+        },
+        {
+          "name": "Fuzzy Autocomplete Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/search/autocomplete?q=kub",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "search", "autocomplete"],
+              "query": [{ "key": "q", "value": "kub" }]
+            },
+            "description": "Autocomplete queries for interactive UI dropdown selectors."
+          }
+        },
+        {
+          "name": "Fuzzy Keyword Match",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/search/fuzzy?q=dokcer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "search", "fuzzy"],
+              "query": [{ "key": "q", "value": "dokcer" }]
+            },
+            "description": "Fuzzy lookup to correctly retrieve documents containing minor spelling variations."
+          }
+        }
+      ]
+    },
+    {
+      "name": "YAML",
+      "description": "Syntax validations, tab flag check, formatter, merger, template schemas, and JSON transformations.",
+      "item": [
+        {
+          "name": "Validate YAML Syntax",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"apiVersion: v1\\nkind: Pod\\nmetadata:\\n  name: core-ingress\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/yaml/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "yaml", "validate"]
+            },
+            "description": "Check if string payload parses to standard YAML successfully."
+          }
+        },
+        {
+          "name": "Lint Indentation (Tab Check)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"apiVersion: v1\\nkind: Pod\\nmetadata:\\n\\tname: app-tabs-error\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/yaml/lint",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "yaml", "lint"]
+            },
+            "description": "Scan files for forbidden tab character indentation offsets."
+          }
+        },
+        {
+          "name": "Bidirectional JSON Converter",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"json\": {\n    \"apiVersion\": \"apps/v1\",\n    \"kind\": \"Deployment\",\n    \"metadata\": { \"name\": \"app-srv\" }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/yaml/convert/yaml",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "yaml", "convert", "yaml"]
+            },
+            "description": "Transform JSON formatted elements back to standard clean YAML strings."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Aggregation dashboard indicators detailing container rates, failure items, and cloud costs.",
+      "item": [
+        {
+          "name": "Pipeline Run Analytics Summary",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "analytics", "summary"]
+            },
+            "description": "Retrieve comprehensive dashboard overview metrics."
+          }
+        },
+        {
+          "name": "Pipeline Deployment Costing",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/costs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "analytics", "costs"]
+            },
+            "description": "Retrieve calculated infrastructure costs across cloud vendors (AWS/GCP/Azure)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Debug",
+      "description": "Common errors diagnostic manuals and step-by-step resolution scripts.",
+      "item": [
+        {
+          "name": "Kubernetes Troubleshooting manual",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/debug/k8s?limit=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "debug", "k8s"],
+              "query": [{ "key": "limit", "value": "2" }]
+            },
+            "description": "Retrieve specialized k8s debugging and crash loop resolution manuals."
+          }
+        },
+        {
+          "name": "Docker daemon Troubleshooting",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/debug/docker?limit=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "debug", "docker"],
+              "query": [{ "key": "limit", "value": "2" }]
+            },
+            "description": "Fetch diagnostic scripts for container engine networking failures."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Database point-in-time CRUD backups operations and blocked connection firewall configurations.",
+      "item": [
+        {
+          "name": "Get Registered Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [{ "key": "limit", "value": "10" }]
+            },
+            "description": "Fetch platform user accounts list (Admin privilege required)."
+          }
+        },
+        {
+          "name": "Trigger Snapshot Backup",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/backups/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "backups", "create"]
+            },
+            "description": "Instruct DB to build a JSON snapshot archive immediately."
+          }
+        },
+        {
+          "name": "Block IP Address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ip\": \"192.168.1.99\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/security/block-ip",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "security", "block-ip"]
+            },
+            "description": "Configure blocked IP lists to deny connections dynamically."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "description": "Prometheus exporter, alerts tracking, and Grafana connection setups.",
+      "item": [
+        {
+          "name": "Prometheus Plaintext Exporter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/monitoring/prometheus",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "monitoring", "prometheus"]
+            },
+            "description": "Retrieve standard scrapable telemetry indicators representing system status."
+          }
+        },
+        {
+          "name": "Grafana Dashboard Configurations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/monitoring/grafana",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "monitoring", "grafana"]
+            },
+            "description": "Fetch configured visual dashboard references."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "In-app alerts streams, reading alerts, and notifications lifecycle.",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "notifications"]
+            },
+            "description": "Retrieve active platform notices."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "description": "Collaboration threads under individual DevOps guides.",
+      "item": [
+        {
+          "name": "Get Guide Discussions List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/comments/{{knowledgeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "comments", "{{knowledgeId}}"]
+            },
+            "description": "Fetch comments and replies timeline registered on specific guides."
+          }
+        },
+        {
+          "name": "Submit Comment Reply",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Excellent template configuration. Fixed our Docker caching issue!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/comments/{{knowledgeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "comments", "{{knowledgeId}}"]
+            },
+            "description": "Post new reply comment inside target guide discussions thread."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "description": "Multi-star ratings, reviews, and average feedback compiles.",
+      "item": [
+        {
+          "name": "Submit Multi-Star Review",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"review\": \"Incredibly robust IaC manual. 5 stars!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reviews/{{knowledgeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reviews", "{{knowledgeId}}"]
+            },
+            "description": "Publish rating assessment and text feedback on specific guide."
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "description": "Diagnostic indicators detailing active DB connections count and OS CPU footprint.",
+      "item": [
+        {
+          "name": "Get System Diagnostics Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/system/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "system", "info"]
+            },
+            "description": "Fetch system information, environment configurations, and Mongoose client sizes."
+          }
+        },
+        {
+          "name": "Get RAM Memory Usage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/system/memory",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "system", "memory"]
+            },
+            "description": "Retrieve raw system RAM metrics."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ]
+}
